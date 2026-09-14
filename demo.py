@@ -1,6 +1,6 @@
 """
-RansomTrace project Demo
-Demonstrates the 4-stage partial implementation live in terminal and exports an HTML report.
+RansomTrace Demo
+Demonstrates the 4-stage implementation live in terminal and exports an HTML report.
 """
 
 import os
@@ -12,7 +12,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 def run_demo():
     print("-" * 72)
     print("  RANSOMTRACE :: INTEGRATED DIGITAL FORENSIC RESPONSE FRAMEWORK")
-    print("  project Live Technical Prototype Demo")
+    print("  Live Technical Prototype Demo")
     print("-" * 72)
     
     tracer = RansomTracer()

@@ -1,6 +1,6 @@
 """
 RansomTrace - Lightweight Digital Forensic Response Framework
-Partial Implementation Prototype for Academic project
+Partial Implementation Prototype for Academic Use
 """
 
 import os
@@ -259,7 +259,7 @@ class RansomTracer:
 
         <div class="footer">
             <span>RansomTrace Engine v0.2.0</span>
-            <span>project Prototype</span>
+            <span>Forensic Analysis Prototype</span>
         </div>
     </div>
 </body>
