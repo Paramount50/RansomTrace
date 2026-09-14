@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RansomTrace | Digital Forensic Dashboard</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --surface: #0a0a0a;
+            --border: #222222;
+            --border-light: #333333;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-tertiary: #71717a;
+            --accent: #ffffff;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-sans); background: var(--bg); color: var(--text-primary); padding: 40px; -webkit-font-smoothing: antialiased; line-height: 1.5; }
+        
+        .container { max-width: 900px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 24px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+        .header-title { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+        .header-subtitle { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
+        .badge-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 500; font-family: var(--font-mono); border: 1px solid var(--border-light); background: #111; color: #fff; text-transform: uppercase; }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-green); }
+        
+        .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 24px; }
+        h2 { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); margin-bottom: 16px; font-family: var(--font-mono); }
+        
+        textarea { width: 100%; height: 120px; background: #000; border: 1px solid var(--border-light); border-radius: 6px; padding: 12px; color: var(--text-secondary); font-family: var(--font-mono); font-size: 12px; resize: none; }
+        textarea:focus { outline: none; border-color: var(--text-tertiary); }
+        
+        button { background: var(--accent); color: #000; border: none; border-radius: 6px; padding: 10px 16px; font-size: 13px; font-weight: 500; font-family: var(--font-sans); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: 0.2s; margin-top: 16px; }
+        button:hover { background: #e5e5e5; }
+        button:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; display: none; }
+        .card { background: #000; border: 1px solid var(--border); border-radius: 6px; padding: 20px; text-align: left; }
+        .card-label { font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-mono); }
+        .card-value { font-size: 24px; font-weight: 600; color: var(--text-primary); margin-top: 8px; letter-spacing: -0.03em; }
+        .card-value.alert { color: var(--accent-red); }
+
+        .results-section { display: none; margin-top: 32px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: #000; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
+        th { background: var(--surface); color: var(--text-tertiary); font-weight: 500; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+        td { color: var(--text-secondary); }
+        tr:last-child td { border-bottom: none; }
+        code { font-family: var(--font-mono); background: #111; border: 1px solid var(--border-light); padding: 2px 6px; border-radius: 4px; font-size: 11px; color: #fff; }
+        
+        .report-link { display: inline-block; margin-top: 16px; color: var(--accent); text-decoration: none; font-size: 13px; font-family: var(--font-mono); border-bottom: 1px dashed var(--border-light); }
+        .report-link:hover { border-bottom: 1px solid var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <div class="header-title">RansomTrace Forensic Dashboard</div>
+                <div class="header-subtitle">Automated Artifact Analysis & Correlation Prototype</div>
+            </div>
+            <div class="badge-status">
+                <span class="badge-dot"></span> ENGINE ONLINE
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>1. Artifact Acquisition</h2>
+            <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">Paste evidence trace or raw artifact contents for automated analysis:</p>
+            <textarea id="trace-input">
+[2026-09-14 10:14:02] ALERT: High SMBv1 traffic on port 445 from 192.168.1.45
+[2026-09-14 10:14:05] EXPLOIT: EternalBlue CVE-2017-0144 payload execution detected.
+[2026-09-14 10:14:08] PROCESS: Spawned mssecsvc.exe (PID 4108) with SYSTEM privileges.
+[2026-09-14 10:14:10] NETWORK: HTTP GET http://iuqerfsodp9ifjaposdfjhgosurijfaewrwergwea.com/ - Connection Failed.
+[2026-09-14 10:14:15] DISK ENCRYPTION: Mass renaming files to .WNCRY extension.
+            </textarea>
+            <button id="run-btn" onclick="runAnalysis()">Run Forensic Analysis</button>
+        </div>
+
+        <div class="grid" id="stats-grid">
+            <div class="card">
+                <div class="card-label">Threat Severity</div>
+                <div class="card-value alert" id="val-severity">--</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Shannon Entropy</div>
+                <div class="card-value" id="val-entropy">--</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Associated Malware Family</div>
+                <div class="card-value" style="font-size: 16px; margin-top: 14px;" id="val-family">--</div>
+            </div>
+        </div>
+
+        <div class="results-section" id="results-section">
+            <h2>2. Evidence Integrity Record</h2>
+            <table>
+                <tr><th>SHA-256 Hash</th><td><code id="val-sha256"></code></td></tr>
+                <tr><th>High Entropy Payload</th><td id="val-payload"></td></tr>
+            </table>
+
+            <h2 style="margin-top: 32px;">3. Threat Intelligence Correlation</h2>
+            <table>
+                <thead><tr><th>IoC Indicator</th><th>Severity</th><th>Suspected Threat Actor</th><th>MITRE ATT&CK</th></tr></thead>
+                <tbody id="ioc-table-body"></tbody>
+            </table>
+            
+            <div style="margin-top: 32px; padding: 16px; border: 1px solid var(--border); border-radius: 6px; background: #000;">
+                <h2>4. Full Incident Report</h2>
+                <p style="font-size:13px; color:var(--text-secondary);">The HTML forensic report has been automatically generated and saved to the evidence locker.</p>
+                <a id="report-link" class="report-link" href="#" target="_blank">View Full Exported Report</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function runAnalysis() {
+            const btn = document.getElementById('run-btn');
+            const input = document.getElementById('trace-input').value;
+            
+            btn.innerText = 'Analyzing...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ trace_data: input })
+                });
+                const data = await response.json();
+
+                if(data.error) throw new Error(data.error);
+
+                // Populate UI
+                document.getElementById('stats-grid').style.display = 'grid';
+                document.getElementById('results-section').style.display = 'block';
+                
+                document.getElementById('val-severity').innerText = `${data.threat_severity_score} / 100`;
+                document.getElementById('val-entropy').innerText = `${data.entropy} / 8.0`;
+                document.getElementById('val-family').innerText = data.threat_family;
+                
+                document.getElementById('val-sha256').innerText = data.sha256;
+                document.getElementById('val-payload').innerText = data.is_encrypted_payload ? 'YES (Encrypted)' : 'NO';
+
+                const iocBody = document.getElementById('ioc-table-body');
+                iocBody.innerHTML = '';
+                data.correlated_iocs.forEach(ioc => {
+                    iocBody.innerHTML += `<tr>
+                        <td><code>${ioc.pattern}</code></td>
+                        <td><span style="color:var(--accent-red)">${ioc.severity}</span></td>
+                        <td>${ioc.threat_actor}</td>
+                        <td>${ioc.mitre_tactic}</td>
+                    </tr>`;
+                });
+
+                document.getElementById('report-link').href = data.report_url;
+
+            } catch (err) {
+                alert('Error analyzing trace: ' + err.message);
+            } finally {
+                btn.innerText = 'Run Forensic Analysis';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
