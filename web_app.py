@@ -6,10 +6,12 @@ from urllib.parse import urlparse, parse_qs
 from ransom_tracer import RansomTracer
 
 PORT = 8082
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, 'static')
 
 class RansomTraceHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory='static', **kwargs)
+        super().__init__(*args, directory=STATIC_DIR, **kwargs)
 
     def do_GET(self):
         if self.path == '/':
@@ -36,7 +38,7 @@ class RansomTraceHandler(http.server.SimpleHTTPRequestHandler):
                 results = tracer.analyze_artifact(artifact_name, sample_trace)
                 
                 # Generate HTML report inside static/reports so it's downloadable
-                report_path = os.path.abspath(os.path.join("static", "reports", "forensic_report.html"))
+                report_path = os.path.join(STATIC_DIR, "reports", "forensic_report.html")
                 generated_file = tracer.generate_html_report(results, report_path)
                 results['report_url'] = '/reports/forensic_report.html'
                 
@@ -58,8 +60,8 @@ class ReuseTCPServer(socketserver.TCPServer):
     allow_reuse_address = True
 
 # Ensure static directory exists
-os.makedirs('static', exist_ok=True)
-os.makedirs('static/reports', exist_ok=True)
+os.makedirs(STATIC_DIR, exist_ok=True)
+os.makedirs(os.path.join(STATIC_DIR, 'reports'), exist_ok=True)
 
 if __name__ == '__main__':
     print(f"\n  [!] Starting RansomTrace Web Dashboard on port {PORT}")
