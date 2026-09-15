@@ -5,11 +5,18 @@ import os
 from urllib.parse import urlparse, parse_qs
 from ransom_tracer import RansomTracer
 
-PORT = 8080
+PORT = 8082
 
 class RansomTraceHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory='static', **kwargs)
+
+    def do_GET(self):
+        if self.path == '/':
+            self.path = '/landing.html'
+        elif self.path == '/dashboard':
+            self.path = '/index.html'
+        return super().do_GET()
 
     def do_POST(self):
         if self.path == '/api/analyze':
@@ -20,11 +27,13 @@ class RansomTraceHandler(http.server.SimpleHTTPRequestHandler):
                 request_json = json.loads(post_data.decode('utf-8'))
                 sample_trace = request_json.get('trace_data', '')
                 
+                artifact_name = request_json.get('artifact_name', 'WannaCry_Memory_Network_Dump.raw')
+                
                 # Initialize the forensic engine
                 tracer = RansomTracer()
                 
                 # Run the analysis pipeline
-                results = tracer.analyze_artifact("WannaCry_Memory_Network_Dump.raw", sample_trace)
+                results = tracer.analyze_artifact(artifact_name, sample_trace)
                 
                 # Generate HTML report inside static/reports so it's downloadable
                 report_path = os.path.abspath(os.path.join("static", "reports", "forensic_report.html"))
@@ -45,6 +54,9 @@ class RansomTraceHandler(http.server.SimpleHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
+class ReuseTCPServer(socketserver.TCPServer):
+    allow_reuse_address = True
+
 # Ensure static directory exists
 os.makedirs('static', exist_ok=True)
 os.makedirs('static/reports', exist_ok=True)
@@ -54,7 +66,7 @@ if __name__ == '__main__':
     print(f"  [!] Navigate to http://localhost:{PORT} in your browser")
     print("-" * 60)
     
-    with socketserver.TCPServer(("", PORT), RansomTraceHandler) as httpd:
+    with ReuseTCPServer(("", PORT), RansomTraceHandler) as httpd:
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:

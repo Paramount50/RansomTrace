@@ -9,7 +9,7 @@ This repository contains the core analytical engine for an automated forensic pi
 This project is built upon the 5-layer forensic framework proposed in academic research (e.g., Shivaji Patil et al.). The layers are:
 
 1. **Detection Layer** (Network / EDR Hooks) - *Future Scope*
-2. **Acquisition Layer** (Memory / Disk Dumping) - *Future Scope*
+2. **Acquisition Layer** (Memory / Disk Dumping) - *Partially Implemented (file upload)*
 3. **Analysis Layer** (Pattern & Entropy Analysis) - **Implemented**
 4. **Correlation Layer** (Threat Intelligence) - **Implemented**
 5. **Reporting Layer** (Automated HTML Exports) - **Implemented**

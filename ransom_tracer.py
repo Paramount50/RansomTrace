@@ -27,7 +27,9 @@ class RansomTracer:
         "CVE-2017-0144": "EternalBlue SMBv1 Remote Code Execution Vulnerability",
         "SMBv1": "Vulnerable Server Message Block Protocol v1",
         ".WNCRY": "WannaCry Encrypted File Extension",
-        "192.168.1.45": "Host targeted by lateral SMB exploit spread"
+        "192.168.1.45": "Host targeted by lateral SMB exploit spread",
+        "DECRYPT_INSTRUCTIONS.txt": "Ransomware Decryption Instruction Note",
+        "CVE-2020-0796": "SMBGhost SMBv3 Remote Code Execution Vulnerability"
     }
 
     KNOWN_IOC_DB = {
@@ -51,6 +53,20 @@ class RansomTracer:
             "malware_family": "WannaCry",
             "severity": "HIGH",
             "mitre_tactic": "Data Encrypted for Impact (T1486)"
+        },
+        "DECRYPT_INSTRUCTIONS.txt": {
+            "type": "File Name / Ransom Note",
+            "threat_actor": "Various",
+            "malware_family": "Generic Ransomware",
+            "severity": "HIGH",
+            "mitre_tactic": "Data Encrypted for Impact (T1486)"
+        },
+        "CVE-2020-0796": {
+            "type": "CVE Exploit",
+            "threat_actor": "Various",
+            "malware_family": "SMBGhost",
+            "severity": "CRITICAL",
+            "mitre_tactic": "Exploitation of Remote Services (T1210)"
         }
     }
 
@@ -123,6 +139,19 @@ class RansomTracer:
             if is_high_entropy:
                 detection_score = min(98.5, detection_score + 5.0)
 
+        families = []
+        for ioc in correlated_iocs:
+            if ioc.get("malware_family"):
+                for fam in ioc["malware_family"].split(" / "):
+                    fam = fam.strip()
+                    if fam and fam not in families:
+                        families.append(fam)
+
+        if families:
+            threat_family = " / ".join(families)
+        else:
+            threat_family = "Unknown"
+
         results = {
             "artifact_name": artifact_name,
             "timestamp": timestamp,
@@ -133,7 +162,7 @@ class RansomTracer:
             "matched_indicators": matched_indicators,
             "correlated_iocs": correlated_iocs,
             "threat_severity_score": round(detection_score, 1),
-            "threat_family": "WannaCry / EternalBlue" if matched_indicators else "Unknown",
+            "threat_family": threat_family,
             "chain_of_custody": custody_entry
         }
 

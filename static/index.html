@@ -71,7 +71,8 @@
 
         <div class="panel">
             <h2>1. Artifact Acquisition</h2>
-            <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">Paste evidence trace or raw artifact contents for automated analysis:</p>
+            <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">Paste evidence trace or raw artifact contents for automated analysis, or upload a file:</p>
+            <input type="file" id="file-upload" accept=".txt,.log" style="margin-bottom: 12px; color: var(--text-secondary); font-family: var(--font-mono); font-size: 12px;" />
             <textarea id="trace-input">
 [2026-09-14 10:14:02] ALERT: High SMBv1 traffic on port 445 from 192.168.1.45
 [2026-09-14 10:14:05] EXPLOIT: EternalBlue CVE-2017-0144 payload execution detected.
@@ -119,9 +120,22 @@
     </div>
 
     <script>
+        document.getElementById('file-upload').addEventListener('change', async function(e) {
+            if (e.target.files.length > 0) {
+                const text = await e.target.files[0].text();
+                document.getElementById('trace-input').value = text;
+            }
+        });
+
         async function runAnalysis() {
             const btn = document.getElementById('run-btn');
+            const fileInput = document.getElementById('file-upload');
             const input = document.getElementById('trace-input').value;
+            let artifactName = "WannaCry_Memory_Network_Dump.raw";
+            
+            if (fileInput.files.length > 0) {
+                artifactName = fileInput.files[0].name;
+            }
             
             btn.innerText = 'Analyzing...';
             btn.disabled = true;
@@ -130,7 +144,7 @@
                 const response = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ trace_data: input })
+                    body: JSON.stringify({ trace_data: input, artifact_name: artifactName })
                 });
                 const data = await response.json();
 
