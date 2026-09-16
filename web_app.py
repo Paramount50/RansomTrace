@@ -5,7 +5,7 @@ import os
 from urllib.parse import urlparse, parse_qs
 from ransom_tracer import RansomTracer
 
-PORT = 8082
+PORT = 8080
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 

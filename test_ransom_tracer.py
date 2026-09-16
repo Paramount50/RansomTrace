@@ -1,5 +1,6 @@
 import unittest
 import os
+import web_app
 from ransom_tracer import RansomTracer
 
 class TestRansomTracer(unittest.TestCase):
@@ -61,6 +62,9 @@ class TestRansomTracer(unittest.TestCase):
         report_path = "reports/test_report.html"
         generated_file = self.tracer.generate_html_report(results, report_path)
         self.assertTrue(os.path.exists(generated_file))
+
+    def test_web_app_port_matches_documented_localhost(self):
+        self.assertEqual(web_app.PORT, 8080)
 
 if __name__ == "__main__":
     unittest.main()
